@@ -104,8 +104,10 @@ ms = 0
 #Running state:
 running = True;
 #Sets up graphics:
+icon = pygame.image.load("icon.png")
 screen = pygame.display.set_mode(resolution)
 pygame.display.set_caption('Pyano')
+pygame.display.set_icon(icon);
 #10 ticks per pixel
 y=0;
 #defines size of tick on screen
