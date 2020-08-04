@@ -99,8 +99,13 @@ w=int(keySize*(nuOfKeys/12*6))
 resolution = (w,h)
 #Game clock setup:
 clock = pygame.time.Clock()
-sms = time.time()*1000
+sms = time.time()*1000.0
 ms = 0
+msOld = 0
+factor = 1.0
+tick = 0
+y=0;
+tickRes=h/MIDIres/10
 #Running state:
 running = True;
 #Sets up graphics:
@@ -108,10 +113,6 @@ icon = pygame.image.load("icon.png")
 screen = pygame.display.set_mode(resolution)
 pygame.display.set_caption('Pyano')
 pygame.display.set_icon(icon);
-#10 ticks per pixel
-y=0;
-#defines size of tick on screen
-tickRes=h/MIDIres/10
 #Channel Cloros:
 channelColor = [[(200,200,250), (150,150,200)], [(200,250,200), (150,200,150)], [(250,200,200), (200,150,150)], [(250,250,200), (200,200,150)]]
 try:
@@ -121,6 +122,21 @@ try:
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				running = False
+			#Keyboard events:
+			if event.type == pygame.KEYDOWN:
+				if event.key == pygame.K_r:
+					sms = time.time()*1000
+					tick = 0
+				if event.key == pygame.K_ESCAPE:
+					running = False
+				if event.key == pygame.K_LEFT:
+					factor = factor-0.1
+				if event.key == pygame.K_RIGHT:
+					factor = factor+0.1
+				if event.key == pygame.K_UP:
+					tick = tick - (1000/(tickTime/1000.0)*factor);
+				if event.key == pygame.K_DOWN:
+					tick = tick + (1000/(tickTime/1000.0)*factor);
 		#Gets midi input
 		msg= midiin.get_message()
 		if msg:
@@ -129,8 +145,9 @@ try:
 			fluidsynth.play_Note(key, 0, keys[key]*100)	
 		#Logic
 		#Calculate Ticks:
-		ms = int(((time.time()*1000)-sms))
-		tick = ms/(tickTime/1000)	
+		ms = (time.time()*1000.0)-sms
+		tick = tick + (((ms-msOld)/(tickTime/1000.0))*factor);
+		msOld = ms	
 		#Note Position Displacement:
 		y=tick*tickRes;
 		#Display:
@@ -191,7 +208,7 @@ try:
 		#Update graphics:
 		pygame.display.update()
 		#Delta time
-		clock.tick(30);
+		clock.tick(60);
 except KeyboardInterrupt:
 	print("")
 #Cleanup:
